@@ -4,7 +4,7 @@
   "description": "<a href=\"https://app.daily.dev/nirajkaushal\"><img src=\"https://api.daily.dev/devcards/aa6f33e247b04b30acdb5c087138cadd.png?r=pih\" width=\"400\" alt=\"Niraj Kaushal's Dev Card\"/></a>",
   "main": "index.js",
   "scripts": {
-    "bolt:pull": "node ./bolt.js"
+    "bolt:pull": "node ./scripts/bolt-pull.js"
   },
   "author": "",
   "license": "ISC"
