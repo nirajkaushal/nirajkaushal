@@ -1,40 +1,34 @@
 const fs = require("fs")
 const path = require("path")
-const { chalk } = require("chalk")
 const { join } = path
 const { existsSync, mkdirSync, writeFileSync } = fs
 
+const slug = "github-indurp9j" // Replace with your desired slug
 const API_URL = "https://bolt.new/api/import/stackblitz"
 
-// Get project slug from command-line arguments
-const slug = process.argv[2]
-if (!slug) {
-  console.log(chalk.red("Error: Please provide a project slug as an argument."))
-  console.log(chalk.yellow("Usage: node script.js <project-slug>"))
-  process.exit(1)
-}
-
-console.log(chalk.blue(`Fetching project data for: ${chalk.bold(slug)}`))
-
+// Function to create directories
 const createDir = (dirPath) => {
   if (!existsSync(dirPath)) {
     mkdirSync(dirPath, { recursive: true })
-    console.log(chalk.green(`Created folder: ${dirPath}`))
+    console.log(`Created folder: ${dirPath}`)
   }
 }
 
+// Function to create files
 const createFile = (filePath, content = "") => {
   writeFileSync(filePath, content)
-  console.log(chalk.cyan(`Created file: ${filePath}`))
+  console.log(`Created file: ${filePath}`)
 }
 
+// Function to fetch the StackBlitz response
 const fetchStackBlitzProject = async () => {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0",
+        "User-Agent":
+          "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1", // Some APIs block non-browser requests
       },
       body: JSON.stringify({ slug }),
     })
@@ -43,21 +37,22 @@ const fetchStackBlitzProject = async () => {
 
     return await response.json()
   } catch (error) {
-    console.error(chalk.red("Error fetching StackBlitz data:"), error.message)
+    console.error("Error fetching StackBlitz data:", error.message)
     process.exit(1)
   }
 }
 
+// Function to construct the project
 const createProjectFromResponse = async () => {
-  console.log(chalk.blue("Creating project..."))
+  console.log("Fetching project data...")
   const appFiles = await fetchStackBlitzProject()
+
+  console.log("Creating project...")
 
   Object.values(appFiles.appFiles).forEach((file) => {
     if (!file.fullPath) {
-      console.warn(
-        chalk.yellow(`Skipping file/folder: ${file.name} (missing fullPath)`)
-      )
-      return
+      console.warn(`Skipping file/folder: ${file.name} (missing fullPath)`)
+      return // Skip if fullPath is missing
     }
 
     const fullPath = join(__dirname, file.fullPath)
@@ -69,7 +64,8 @@ const createProjectFromResponse = async () => {
     }
   })
 
-  console.log(chalk.green.bold("Project successfully created!"))
+  console.log("Project successfully created!")
 }
 
+// Execute the script
 createProjectFromResponse()
