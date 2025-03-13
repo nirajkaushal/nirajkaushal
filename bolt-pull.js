@@ -1,10 +1,26 @@
 const fs = require("fs")
 const path = require("path")
+const readline = require("readline")
 const { join } = path
 const { existsSync, mkdirSync, writeFileSync } = fs
 
-const slug = "github-indurp9j" // Replace with your desired slug
 const API_URL = "https://bolt.new/api/import/stackblitz"
+
+// Create readline interface
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+})
+
+// Function to get project slug from user
+const getProjectSlug = () => {
+  return new Promise((resolve) => {
+    rl.question("Enter the project slug: ", (answer) => {
+      rl.close()
+      resolve(answer.trim())
+    })
+  })
+}
 
 // Function to create directories
 const createDir = (dirPath) => {
@@ -21,7 +37,7 @@ const createFile = (filePath, content = "") => {
 }
 
 // Function to fetch the StackBlitz response
-const fetchStackBlitzProject = async () => {
+const fetchStackBlitzProject = async (slug) => {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
@@ -44,12 +60,18 @@ const fetchStackBlitzProject = async () => {
 
 // Function to construct the project
 const createProjectFromResponse = async () => {
+  const slug = await getProjectSlug()
+  if (!slug) {
+    console.error("Project slug is required!")
+    process.exit(1)
+  }
+
   console.log("Fetching project data...")
-  const appFiles = await fetchStackBlitzProject()
+  const response = await fetchStackBlitzProject(slug)
 
   console.log("Creating project...")
 
-  Object.values(appFiles.appFiles).forEach((file) => {
+  Object.values(response.appFiles).forEach((file) => {
     if (!file.fullPath) {
       console.warn(`Skipping file/folder: ${file.name} (missing fullPath)`)
       return // Skip if fullPath is missing
